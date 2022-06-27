@@ -1,0 +1,26 @@
+﻿@model IEnumerable<SchoolManage.Models.StudentSubject>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<table class="table table-bordered">
+    <tr>
+
+        <th>Class Name</th>
+        <th>SubjectId</th>
+        <th>Class</th>
+
+    </tr>
+
+    @foreach (var std in Model)
+    {
+<tr>
+    <td>@std.Class.Subjects</td>
+    <td>@std.SubjectId</td>
+    <td>@std.Class.ClassName</td>
+  
+</tr>
+    }
+</table>
+    
