@@ -1,0 +1,225 @@
+view------------
+
+
+
+@model SchoolManage.ViewModel.StudentViewModel
+@{
+    ViewData["Title"] = "Index";
+
+
+}
+
+<div>
+    <h4>StudentSubject</h4>
+    <hr />
+    <div class="row">
+        <div class="col-6 offset-3">
+            <form asp-action="Create" asp-controller="Customer" method="post">
+                <div class="form-group">
+                    <label asp-for="StudentName"></label>
+                    <input asp-for="StudentName" class="form-control" />
+                    <span asp-validation-for="StudentName" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Email"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RollNo"></label>
+                    <input asp-for="RollNo" class="form-control" />
+                    <span asp-validation-for="RollNo" class="text-danger"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label asp-for="ClassID" class="control-label">Class</label>
+                    @Html.DropDownListFor(m=>m.ClassID, new SelectList(Model.ClassList,"Value", "Text"))
+                  
+                    <span asp-validation-for="ClassID" class="text-danger"></span>
+                </div>
+                    
+                
+                @*<div class="form-group">
+                    <label asp-for="SubjectId" class="control-label">Subject</label>
+                    @Html.DropDownListFor(m => m.SubjectId, new SelectList(Model.SubjectList, "Value", "Text"))
+
+                    <span asp-validation-for="SubjectId" class="text-danger"></span>
+                </div>*@
+
+
+                <input type="hidden" value="@TempData["UserId"]" asp-for="ApplicationUserID" class="form-control" />
+
+                <div class="form-group">
+                    <label asp-for="Status"></label>
+                    <input asp-for="Status" class="form-control" />
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Created_On"></label>
+                    <input asp-for="Created_On" class="form-control" />
+                    <span asp-validation-for="Created_On" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Modified_On"></label>
+                    <input asp-for="Modified_On" class="form-control" />
+                    <span asp-validation-for="Modified_On" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div>
+    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Index">Back to List</a>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+----------------------Controller-----------------
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using SchoolManage.Data;
+using SchoolManage.Models;
+using SchoolManage.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SchoolManage.Controllers
+{
+    public class StudentController : Controller
+    {
+        private readonly ApplicationDbContext dbContext;
+
+        public StudentController(ApplicationDbContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
+
+        [HttpGet]
+        public IActionResult Index(string id)
+        {
+
+            var Student = dbContext.StudentSubject.Where(e => e.ApplicationUserID == id)
+                                                  .Select(y => y.SubjectId).ToList();
+
+            ClassDropDown();
+            //SubjectDropDown();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Index(StudentViewModel student)
+        {
+            var stud = new StudentSubject()
+            {
+                 Student = new ApplicationUser()
+                {
+                    Name = student.StudentName,
+                    Email = student.Email,
+                    EnrollmentNo = student.RollNo,               
+                },
+                 Status = student.Status,
+                 Class = student.ClassID,
+                 ApplicationUserID = student.ApplicationUserID,
+
+            };
+            if (ModelState.IsValid)
+            {
+                dbContext.Employees.Add(emp);
+                dbContext.SaveChanges();
+                return RedirectToAction("Index");
+
+            }
+        }
+        public IActionResult ClassDropDown()
+        {
+
+            var classes = new StudentViewModel();
+            classes.ClassList = new List<SelectListItem>();
+            classes.ClassList.Add(new SelectListItem
+            {
+                Text = "Select Class",
+                Value = ""
+            });
+            var data = dbContext.Class.ToList();
+            foreach (var item in data)
+            {
+                classes.ClassList.Add(new SelectListItem
+                {
+                    Text = item.ClassName,
+                    Value = Convert.ToString(item.ID)
+                });
+            }
+
+            return View(classes);
+        }
+
+        public IActionResult SubjectDropDown()
+        {
+            var subject = new StudentViewModel();
+
+            subject.SubjectList = new List<SelectListItem>();
+            subject.SubjectList.Add(new SelectListItem
+            {
+                Text = "Select Subject",
+                Value = ""
+            });
+            var data = dbContext.Subject.ToList();
+            foreach (var item in data)
+            {
+                subject.SubjectList.Add(new SelectListItem
+                {
+                    Text = item.Subjectname,
+                    Value = Convert.ToString(item.Id)
+                });
+            }
+
+            return View(subject);
+        }
+    }
+}
+
+
+
+----------------viewmodel-----------------
+
+
+using Microsoft.AspNetCore.Mvc.Rendering;
+using SchoolManage.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SchoolManage.ViewModel
+{
+    public class StudentViewModel
+    {
+        public string StudentName { get; set; }
+        public string  Email { get; set; }
+        public string RollNo { get; set; }
+        public bool Status  { get; set; }
+
+        public int ClassID { get; set; }
+        public List<SelectListItem> ClassList { get; set; }
+        public int SubjectId { get; set; }
+        public List<SelectListItem> SubjectList { get; set; }
+        public string ApplicationUserID { get; set; }
+        public DateTime? Created_On { get; set; }
+        public DateTime? Modified_On { get; set; }
+
+    }
+}
